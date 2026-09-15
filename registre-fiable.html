@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#E7ECE0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Registre">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Registre%22%2C%22short_name%22%3A%22Registre%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23E7ECE0%22%2C%22theme_color%22%3A%22%23E7ECE0%22%7D">
+<title>Registre — Entrées & Sorties</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #E7ECE0;
+    --card: #F2F5EC;
+    --ink: #24312A;
+    --ink-muted: #5B6B5F;
+    --rule: #B9C4AE;
+    --entree: #2E6B3E;
+    --sortie: #A23B2E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{
+    max-width:480px;
+    margin:0 auto;
+    padding:28px 18px 40px;
+  }
+  header h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:2rem;
+    margin:0 0 6px;
+    letter-spacing:0.2px;
+  }
+  header .sub{
+    margin:0;
+    color:var(--ink-muted);
+    font-size:0.85rem;
+    line-height:1.4;
+  }
+  .balance{
+    margin:26px 0 22px;
+    padding:20px;
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    text-align:center;
+  }
+  .balance-label{
+    margin:0 0 6px;
+    font-size:0.78rem;
+    color:var(--ink-muted);
+  }
+  .balance-figure{
+    margin:0;
+    font-size:2.1rem;
+    font-weight:600;
+    letter-spacing:0.5px;
+  }
+  .balance-figure.entree{color:var(--entree);}
+  .balance-figure.sortie{color:var(--sortie);}
+  .stat-row{
+    display:flex;
+    justify-content:center;
+    gap:32px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--rule);
+  }
+  .stat{display:flex; flex-direction:column; gap:2px;}
+  .stat-label{font-size:0.72rem; color:var(--ink-muted);}
+  .stat-value{font-size:1rem; font-weight:600;}
+  .stat-value.entree{color:var(--entree);}
+  .stat-value.sortie{color:var(--sortie);}
+
+  .add-form{margin-bottom:22px;}
+  .add-form input[type="text"]{
+    width:100%;
+    padding:12px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    color:var(--ink);
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    margin-bottom:8px;
+  }
+  .form-row{display:flex; gap:8px;}
+  .form-row input[type="number"]{
+    width:110px;
+    padding:12px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    color:var(--ink);
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:5px;
+  }
+  .form-row input.error{border-color:var(--sortie);}
+  .form-buttons{display:flex; gap:8px; flex:1;}
+  .btn{
+    flex:1;
+    min-height:44px;
+    border:none;
+    border-radius:5px;
+    color:#fff;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn.entree{background:var(--entree);}
+  .btn.sortie{background:var(--sortie);}
+  @media (prefers-reduced-motion: no-preference){
+    .btn{transition:opacity 0.15s ease;}
+    .btn:active{opacity:0.8;}
+  }
+
+  input:focus, .btn:focus-visible, .entry-delete:focus-visible, .text-link:focus-visible{
+    outline:2px solid var(--ink);
+    outline-offset:2px;
+  }
+
+  .ledger-columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .ledger-col-title{
+    margin:0 0 10px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--rule);
+    font-size:0.82rem;
+    font-weight:600;
+  }
+  .ledger-col-title.entree{color:var(--entree);}
+  .ledger-col-title.sortie{color:var(--sortie);}
+  .entry-row{
+    padding:9px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .entry-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:4px;
+  }
+  .entry-note{
+    font-size:0.74rem;
+    color:var(--ink-muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    flex:1;
+  }
+  .entry-amount{
+    margin-top:3px;
+    font-size:0.9rem;
+    font-weight:600;
+  }
+  .entry-amount.entree{color:var(--entree);}
+  .entry-amount.sortie{color:var(--sortie);}
+  .entry-delete{
+    background:none;
+    border:none;
+    color:var(--ink-muted);
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    padding:2px 4px;
+    flex-shrink:0;
+  }
+  .ledger-empty{
+    padding:12px 2px;
+    color:var(--ink-muted);
+    font-size:0.76rem;
+    font-style:italic;
+    font-family:'Fraunces', serif;
+  }
+  .ledger-col-total{
+    padding-top:10px;
+    margin-top:4px;
+    border-top:3px double var(--ink);
+    font-weight:600;
+    font-size:0.88rem;
+    text-align:right;
+  }
+  .ledger-col-total.entree{color:var(--entree);}
+  .ledger-col-total.sortie{color:var(--sortie);}
+
+  .footer-actions{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:26px;
+  }
+  .text-link{
+    background:none;
+    border:none;
+    color:var(--ink-muted);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px;
+  }
+
+  .undo-toast{
+    position:fixed;
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 16px;
+    border-radius:6px;
+    font-size:0.82rem;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    z-index:10;
+  }
+  .undo-toast button{
+    background:none;
+    border:none;
+    color:var(--paper);
+    text-decoration:underline;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    cursor:pointer;
+    padding:2px 4px;
+  }
+</style>
+</head>
+<body>
+  <main class="sheet">
+    <header>
+      <h1>Registre</h1>
+      <p class="sub">Tes entrées et sorties d'argent, solde calculé automatiquement. Utile pour préparer tes impôts.</p>
+    </header>
+
+    <section class="balance">
+      <p class="balance-label">Solde actuel</p>
+      <p class="balance-figure" id="balanceFigure">0.00 CHF</p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">Entrées</span>
+          <span class="stat-value entree" id="totalEntree">0.00</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Sorties</span>
+          <span class="stat-value sortie" id="totalSortie">0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="add-form">
+      <input type="text" id="noteInput" placeholder="Note (ex: salaire, loyer, courses...)" maxlength="60">
+      <div class="form-row">
+        <input type="number" id="amountInput" placeholder="0.00" step="0.05" min="0" inputmode="decimal">
+        <div class="form-buttons">
+          <button type="button" class="btn entree" id="addEntree">+ Entrée</button>
+          <button type="button" class="btn sortie" id="addSortie">+ Sortie</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="ledger">
+      <div class="ledger-columns">
+        <div class="ledger-col">
+          <p class="ledger-col-title entree">Entrées</p>
+          <div class="ledger-col-body" id="entreeBody"></div>
+          <div class="ledger-empty" id="entreeEmpty">Chargement…</div>
+          <p class="ledger-col-total entree" id="totalEntreeCol" style="display:none;">0.00</p>
+        </div>
+        <div class="ledger-col">
+          <p class="ledger-col-title sortie">Sorties</p>
+          <div class="ledger-col-body" id="sortieBody"></div>
+          <div class="ledger-empty" id="sortieEmpty">Chargement…</div>
+          <p class="ledger-col-total sortie" id="totalSortieCol" style="display:none;">0.00</p>
+        </div>
+      </div>
+    </section>
+
+    <p style="margin:18px 0 0;text-align:center;color:var(--ink-muted);font-size:0.7rem;line-height:1.5;">Pour l'utiliser comme une app sur iPhone : ouvre ce fichier dans Safari, puis <strong>Partager → Sur l'écran d'accueil</strong>.</p>
+
+    <div id="saveStatus" aria-live="polite" style="text-align:center;color:var(--ink-muted);font-size:.68rem;margin-top:14px;">Sauvegarde locale activée</div>
+    <div class="footer-actions">
+      <button type="button" class="text-link" id="exportBtn">Exporter un backup</button>
+      <label class="text-link" for="importFile">Importer un backup</label>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button type="button" class="text-link" id="resetBtn">Réinitialiser</button>
+    </div>
+  </main>
+
+<script>
+  const STORAGE_KEY = 'transactions';
+  const DB_NAME = 'registre-db';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'transactions';
+  let transactions = [];
+  let db = null;
+
+  function openDatabase(){
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) return reject(new Error('IndexedDB indisponible'));
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(STORE_NAME)) {
+          database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = () => { db = request.result; resolve(db); };
+      request.onerror = () => reject(request.error || new Error('Impossible d’ouvrir la base'));
+    });
+  }
+
+  function idbRead(){
+    return new Promise((resolve, reject) => {
+      if (!db) return reject(new Error('Base indisponible'));
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function idbWrite(items){
+    return new Promise((resolve, reject) => {
+      if (!db) return reject(new Error('Base indisponible'));
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.clear();
+      items.forEach(item => store.put(item));
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('Sauvegarde annulée'));
+    });
+  }
+
+  function formatAmount(n){
+    const fixed = Math.abs(n).toFixed(2);
+    const parts = fixed.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+    return parts.join('.');
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function computeTotals(){
+    let entree = 0, sortie = 0;
+    transactions.forEach(t => {
+      if (t.type === 'entree') entree += t.amount; else sortie += t.amount;
+    });
+    return { entree, sortie, solde: entree - sortie };
+  }
+
+  function renderColumn(type, bodyId, emptyId, totalId, total){
+    const body = document.getElementById(bodyId);
+    const empty = document.getElementById(emptyId);
+    const totalEl = document.getElementById(totalId);
+    body.innerHTML = '';
+    const items = transactions.filter(t => t.type === type).slice().reverse();
+
+    if (items.length === 0){
+      empty.textContent = type === 'entree' ? 'Aucune entrée.' : 'Aucune sortie.';
+      empty.style.display = 'block';
+      totalEl.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    totalEl.style.display = 'block';
+    totalEl.textContent = formatAmount(total);
+
+    items.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+      row.innerHTML =
+        '<div class="entry-top">' +
+          '<span class="entry-note">' + escapeHtml(t.note || '—') + '</span>' +
+          '<button class="entry-delete" data-id="' + t.id + '" aria-label="Supprimer cette ligne">×</button>' +
+        '</div>' +
+        '<div class="entry-amount ' + type + '">' + formatAmount(t.amount) + '</div>';
+      body.appendChild(row);
+    });
+
+    body.querySelectorAll('.entry-delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        transactions = transactions.filter(t => String(t.id) !== String(id));
+        persist();
+        render();
+      });
+    });
+  }
+
+  function render(){
+    const { entree, sortie, solde } = computeTotals();
+    const balanceFigure = document.getElementById('balanceFigure');
+    balanceFigure.textContent = (solde >= 0 ? '+ ' : '− ') + formatAmount(solde) + ' CHF';
+    balanceFigure.className = 'balance-figure ' + (solde >= 0 ? 'entree' : 'sortie');
+    document.getElementById('totalEntree').textContent = formatAmount(entree);
+    document.getElementById('totalSortie').textContent = formatAmount(sortie);
+
+    renderColumn('entree', 'entreeBody', 'entreeEmpty', 'totalEntreeCol', entree);
+    renderColumn('sortie', 'sortieBody', 'sortieEmpty', 'totalSortieCol', sortie);
+  }
+
+  function persist(){
+    const status = document.getElementById('saveStatus');
+    if (status) status.textContent = 'Sauvegarde…';
+    // LocalStorage is kept as a fast mirror/fallback.
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+    } catch (e) {
+      console.warn('Miroir localStorage indisponible', e);
+    }
+    // IndexedDB is the primary durable store.
+    idbWrite(transactions).then(() => {
+      if (status) status.textContent = 'Sauvegardé sur cet appareil';
+    }).catch(e => {
+      console.warn('Sauvegarde IndexedDB indisponible', e);
+      if (status) status.textContent = 'Sauvegarde locale active';
+    });
+  }
+
+  async function loadSavedTransactions(){
+    // Prefer IndexedDB, then localStorage.
+    try {
+      await openDatabase();
+      const saved = await idbRead();
+      if (Array.isArray(saved)) {
+        transactions = saved;
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); } catch (_) {}
+        return;
+      }
+    } catch (e) {
+      console.warn('Lecture IndexedDB indisponible', e);
+    }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      transactions = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(transactions)) transactions = [];
+    } catch (e) {
+      transactions = [];
+    }
+  }
+
+  function exportBackup(){
+    const dataStr = JSON.stringify(transactions, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'registre-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importBackup(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (Array.isArray(parsed)){
+          transactions = parsed;
+          persist();
+          render();
+          alert('Backup importé avec succès.');
+        } else {
+          alert("Ce fichier n'est pas un backup valide.");
+        }
+      } catch (err) {
+        alert('Impossible de lire ce fichier.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function addTransaction(type){
+    const noteInput = document.getElementById('noteInput');
+    const amountInput = document.getElementById('amountInput');
+    const amount = parseFloat(amountInput.value);
+    if (isNaN(amount) || amount <= 0){
+      amountInput.classList.add('error');
+      amountInput.focus();
+      setTimeout(() => amountInput.classList.remove('error'), 900);
+      return;
+    }
+    transactions.push({
+      id: Date.now() + Math.random().toString(36).slice(2, 7),
+      type: type,
+      amount: amount,
+      note: noteInput.value.trim(),
+      date: new Date().toISOString()
+    });
+    noteInput.value = '';
+    amountInput.value = '';
+    persist();
+    render();
+    noteInput.focus();
+  }
+
+  function attachHandlers(){
+    document.getElementById('addEntree').addEventListener('click', () => addTransaction('entree'));
+    document.getElementById('addSortie').addEventListener('click', () => addTransaction('sortie'));
+    document.getElementById('amountInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTransaction('entree');
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Effacer toutes les opérations du registre ? Cette action est irréversible.')){
+        transactions = [];
+        persist();
+        render();
+      }
+    });
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) importBackup(file);
+      e.target.value = '';
+    });
+  }
+
+  async function init(){
+    await loadSavedTransactions();
+    render();
+    attachHandlers();
+  }
+
+  init();
+</script>
+</body>
+</html>
