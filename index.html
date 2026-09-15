@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Registre CH">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Registre CH — Finances d'indépendant</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--green:#087f5b;--red:#c92a2a;--blue:#2563eb;--shadow:0 8px 28px rgba(15,23,42,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#111827;color:white;padding:22px 18px 18px;position:sticky;top:0;z-index:5}
+.wrap{max-width:980px;margin:auto}h1{font-size:24px;margin:0 0 4px}header p{margin:0;color:#cbd5e1}
+main{padding:16px;max-width:980px;margin:auto}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}.metric{font-size:25px;font-weight:750;margin-top:5px}.label{color:var(--muted);font-size:13px}
+.balance{border-left:5px solid var(--blue)}.positive{color:var(--green)}.negative{color:var(--red)}
+section{margin-top:14px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}h2{font-size:17px;margin:0}
+form{display:grid;grid-template-columns:110px 1fr 180px 170px auto;gap:9px;align-items:end}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}input,select,button{font:inherit;border:1px solid var(--line);border-radius:10px;padding:11px;background:white}button{cursor:pointer;font-weight:650}
+.primary{background:#111827;color:white;border-color:#111827}.danger{color:var(--red)}.ghost{background:#f8fafc}
+.filters{display:grid;grid-template-columns:1fr 170px 170px;gap:9px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:12px;color:var(--muted)}.amount{font-weight:700;white-space:nowrap}
+.in{color:var(--green)}.out{color:var(--red)}.cat{font-size:12px;background:#f1f5f9;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:25px}
+.notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:12px;padding:11px;font-size:13px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:24px 10px}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}form{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}.filters{grid-template-columns:1fr 1fr}.filters input{grid-column:1/-1}table{font-size:13px}th:nth-child(4),td:nth-child(4){display:none}}
+@media(max-width:470px){main{padding:10px}.grid{gap:8px}.card{padding:12px}.metric{font-size:20px}form{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.filters input{grid-column:auto}table th:nth-child(2),table td:nth-child(2){display:none}}
+ .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.profile-info{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px}.profile-info b{display:block;margin-bottom:3px}.profile-info span{font-size:12px;color:var(--muted)}
+.quickcats{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.quickcats button{padding:7px 10px;font-size:12px}
+@media(max-width:470px){.profile-grid{grid-template-columns:1fr}}
+ 
+.planbar{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#111827;color:#fff;border-radius:14px;padding:13px 15px}
+.planbar small{color:#cbd5e1}.pill{background:#fff;color:#111827;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:750}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.plan{position:relative}.plan h3{margin:0 0 4px}.price{font-size:25px;font-weight:800}.plan ul{padding-left:18px;color:var(--muted);font-size:13px;line-height:1.65}.plan button{width:100%}.featured{border:2px solid #111827}.tag{position:absolute;right:12px;top:12px;font-size:10px;background:#111827;color:#fff;border-radius:999px;padding:4px 7px}
+.lock{opacity:.65}.locked{font-size:12px;color:var(--muted);margin-top:7px}.dash{display:grid;grid-template-columns:1fr 1fr;gap:10px}.barrow{margin:9px 0}.barlabel{display:flex;justify-content:space-between;font-size:12px}.bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#111827}
+.receipt{display:flex;gap:8px;align-items:center}.receipt img{width:48px;height:48px;object-fit:cover;border-radius:8px}
+@media(max-width:700px){.plans{grid-template-columns:1fr}.dash{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Registre CH</h1><p>Finances simples pour indépendants suisses</p></div></header>
+<main>
+<div class="notice">Prototype V1 — conçu pour suivre recettes, dépenses et justificatifs. Il ne remplace pas une comptabilité professionnelle ni un conseil fiscal.</div>
+<section class="card">
+<div class="section-title"><h2>Mon activité</h2></div>
+<div class="profile-grid">
+<div><label>Métier / activité</label><select id="profession">
+<option value="independant">Indépendant général</option>
+<option value="artisan">Artisan / métier manuel</option>
+<option value="coach">Coach / formateur</option>
+<option value="consultant">Consultant / freelance</option>
+<option value="commerce">Commerce / vente</option>
+<option value="restauration">Restauration / food</option>
+<option value="transport">Transport / livraison</option>
+<option value="immobilier">Immobilier</option>
+<option value="createur">Créateur / influenceur</option>
+</select></div>
+<div class="profile-info"><b id="profileTitle">Indépendant général</b><span id="profileHint">Catégories générales pour suivre simplement ton activité.</span></div>
+</div>
+<div class="quickcats" id="quickcats"></div>
+</section>
+
+<section class="card">
+<div class="planbar"><div><b id="currentPlan">Version gratuite</b><br><small>Choisis une formule pour voir ce que l'application pourra débloquer.</small></div><span class="pill">CHF</span></div>
+</section>
+
+<section class="card">
+<div class="section-title"><h2>Formules Registre CH</h2></div>
+<div class="plans">
+<div class="plan card"><h3>Gratuit</h3><div class="price">CHF 0</div><div class="label">pour commencer</div><ul><li>Registre recettes/dépenses</li><li>Catégories métier</li><li>Recherche & filtres</li><li>Statistiques de base</li><li>CSV + sauvegarde</li></ul><button class="ghost" data-plan="free">Actuel</button></div>
+<div class="plan card featured"><span class="tag">POPULAIRE</span><h3>Plus</h3><div class="price">CHF 4<span style="font-size:13px">/mois</span></div><div class="label">ou CHF 40/an</div><ul><li>Tout le Gratuit</li><li>📷 Justificatifs photo</li><li>📊 Dashboard avancé</li><li>📅 Rapports mensuels/annuels</li><li>🇨🇭 Préparation fiscale</li></ul><button class="primary" data-plan="plus">Tester Plus</button></div>
+<div class="plan card"><h3>Pro</h3><div class="price">CHF 7<span style="font-size:13px">/mois</span></div><div class="label">ou CHF 70/an</div><ul><li>Tout le Plus</li><li>🤖 Catégorisation automatique</li><li>☁️ Sauvegarde cloud</li><li>📱 Synchronisation appareils</li><li>🔮 À prévoir</li><li>📄 Rapport fiduciaire</li></ul><button data-plan="pro">Tester Pro</button></div>
+</div>
+<div id="planMsg" class="locked">Mode test : aucun paiement réel n'est activé.</div>
+</section>
+
+<section class="grid">
+<div class="card balance"><div class="label">Solde</div><div id="balance" class="metric">CHF 0.00</div></div>
+<div class="card"><div class="label">Recettes</div><div id="income" class="metric positive">CHF 0.00</div></div>
+<div class="card"><div class="label">Dépenses</div><div id="expense" class="metric negative">CHF 0.00</div></div>
+<div class="card"><div class="label">Opérations</div><div id="count" class="metric">0</div></div>
+</section>
+
+<section class="card">
+<div class="section-title"><h2>Ajouter une opération</h2></div>
+<form id="form">
+<div><label>Type</label><select id="type"><option value="in">Recette</option><option value="out">Dépense</option></select></div>
+<div><label>Description</label><input id="desc" class="wide" required placeholder="Ex. Facture client #104"></div>
+<div><label>Montant (CHF)</label><input id="amount" type="number" step="0.01" min="0" required placeholder="0.00"></div>
+<div><label>Catégorie</label><select id="category"></select></div>
+<div><label>Justificatif</label><input id="receipt" type="file" accept="image/*" capture="environment"></div>
+<div><button class="primary" type="submit">Ajouter</button></div>
+</form>
+</section>
+
+<section class="card">
+<div class="section-title"><h2>Dashboard avancé</h2><span class="cat">Plus / Pro</span></div>
+<div id="advancedDash" class="dash">
+<div><div class="label">Répartition des dépenses</div><div id="bars"></div></div>
+<div><div class="label">Résumé rapide</div><div id="dashText" style="margin-top:10px;line-height:1.8"></div></div>
+</div>
+</section>
+
+<section class="card">
+<div class="section-title"><h2>Registre</h2><div class="actions"><button id="exportCsv">CSV</button><button id="exportJson">Sauvegarde</button><button id="importBtn">Importer</button><button id="reset" class="danger">Réinitialiser</button><input id="file" type="file" accept=".json" hidden></div></div>
+<div class="filters">
+<input id="search" placeholder="Rechercher…">
+<select id="month"><option value="">Tous les mois</option></select>
+<select id="filterCat"><option value="">Toutes les catégories</option></select>
+</div>
+<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Date</th><th>Description</th><th>Catégorie</th><th>Type</th><th>Montant</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+</section>
+
+<section class="card">
+<div class="section-title"><h2>Résumé annuel</h2></div>
+<div id="summary" class="label">Ajoute des opérations pour voir le résumé.</div>
+</section>
+</main>
+<footer>Registre CH • Données stockées localement sur cet appareil dans cette V1.</footer>
+<script>
+const PROFILES={
+independant:{title:"Indépendant général",hint:"Catégories générales pour suivre simplement ton activité.",cats:["Vente","Matériel","Transport","Repas","Abonnement","Téléphone / Internet","Assurance","Impôts / taxes","AVS","TVA","Marketing","Fournitures","Autre"]},
+artisan:{title:"Artisan / métier manuel",hint:"Pensé pour matériaux, outils, véhicules et chantiers.",cats:["Chantiers","Matériel","Matériaux","Outils","Véhicule","Carburant","Transport","Assurance","Sous-traitance","Publicité","AVS","TVA","Impôts / taxes","Autre"]},
+coach:{title:"Coach / formateur",hint:"Pensé pour prestations, déplacements et outils professionnels.",cats:["Prestations","Matériel","Formation","Déplacements","Transport","Logiciels","Abonnement","Publicité","Téléphone / Internet","Assurance","AVS","TVA","Impôts / taxes","Autre"]},
+consultant:{title:"Consultant / freelance",hint:"Pensé pour missions, logiciels, matériel et frais professionnels.",cats:["Prestations","Missions","Logiciels","Matériel","Téléphone / Internet","Coworking","Transport","Repas","Formation","Publicité","Assurance","AVS","TVA","Impôts / taxes","Autre"]},
+commerce:{title:"Commerce / vente",hint:"Pensé pour achats de marchandises, stock et ventes.",cats:["Vente","Marchandises","Stock","Livraison","Matériel","Publicité","Boutique / local","Transport","Logiciels","Assurance","AVS","TVA","Impôts / taxes","Autre"]},
+restauration:{title:"Restauration / food",hint:"Pensé pour matières premières, livraisons et matériel.",cats:["Vente","Matières premières","Boissons","Matériel","Cuisine","Livraison","Local","Personnel","Publicité","Assurance","AVS","TVA","Impôts / taxes","Autre"]},
+transport:{title:"Transport / livraison",hint:"Pensé pour véhicules, carburant, entretien et missions.",cats:["Courses / missions","Véhicule","Carburant","Entretien","Péages","Assurance","Parking","Téléphone / Internet","Matériel","AVS","TVA","Impôts / taxes","Autre"]},
+immobilier:{title:"Immobilier",hint:"Pensé pour loyers, entretien, charges et biens.",cats:["Loyers","Vente","Charges","Entretien","Rénovation","Matériel","Assurance","Publicité","Gestion","Transport","AVS","TVA","Impôts / taxes","Autre"]},
+createur:{title:"Créateur / influenceur",hint:"Pensé pour revenus de contenu, matériel et collaborations.",cats:["Partenariats","Publicité","Ventes","Abonnements","Matériel","Caméra / audio","Logiciels","Déplacements","Repas","Téléphone / Internet","Formation","AVS","TVA","Impôts / taxes","Autre"]}
+};
+let CATS=PROFILES.independant.cats;
+const PROFILE_KEY="registre_ch_profile";
+let tx=[];
+const KEY="registre_ch_v2";
+let plan=localStorage.getItem("registre_ch_plan")||"free";
+const $=id=>document.getElementById(id);
+function money(n){return new Intl.NumberFormat("fr-CH",{style:"currency",currency:"CHF"}).format(n)}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(tx))}
+function load(){try{tx=JSON.parse(localStorage.getItem(KEY)||"[]")}catch{tx=[]}}
+function refreshCategories(){
+  const current=$("category").value, currentFilter=$("filterCat").value;
+  $("category").innerHTML="";$("filterCat").innerHTML='<option value="">Toutes les catégories</option>';
+  CATS.forEach(c=>{$("category").add(new Option(c,c));$("filterCat").add(new Option(c,c))});
+  if(CATS.includes(current))$("category").value=current;
+  if(CATS.includes(currentFilter))$("filterCat").value=currentFilter;
+  $("quickcats").innerHTML=CATS.slice(0,7).map(c=>`<button type="button" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  $("profileTitle").textContent=PROFILES[$("profession").value].title;
+  $("profileHint").textContent=PROFILES[$("profession").value].hint;
+}
+function setup(){
+  $("profession").value=localStorage.getItem(PROFILE_KEY)||"independant";
+  refreshCategories();
+  const now=new Date(); const y=now.getFullYear();
+  for(let i=0;i<24;i++){let d=new Date(y,now.getMonth()-i,1),v=d.toISOString().slice(0,7);$("month").add(new Option(v,v))}
+}
+function render(){
+ const q=$("search").value.toLowerCase(), mo=$("month").value, cat=$("filterCat").value;
+ let rows=tx.filter(x=>(!q||(x.desc+" "+x.cat).toLowerCase().includes(q))&&(!mo||x.date.slice(0,7)===mo)&&(!cat||x.cat===cat)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ $("tbody").innerHTML=rows.length?rows.map(x=>`<tr><td>${x.date}</td><td>${esc(x.desc)}</td><td><span class="cat">${esc(x.cat)}</span></td><td>${x.type==="in"?"Recette":"Dépense"}</td><td class="amount ${x.type==="in"?"in":"out"}">${x.type==="in"?"+":"−"} ${money(x.amount)}</td><td>${x.receipt?`<span class="receipt">📷</span>`:""} <button data-del="${x.id}" class="danger">Suppr.</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">Aucune opération</td></tr>`;
+ const income=tx.filter(x=>x.type==="in").reduce((s,x)=>s+x.amount,0), expense=tx.filter(x=>x.type==="out").reduce((s,x)=>s+x.amount,0);
+ $("balance").textContent=money(income-expense);$("balance").className="metric "+(income-expense>=0?"positive":"negative");
+ $("income").textContent=money(income);$("expense").textContent=money(expense);$("count").textContent=tx.length;
+ const months={};tx.forEach(x=>{let m=x.date.slice(0,7);months[m]??={i:0,o:0};months[m][x.type==="in"?"i":"o"]+=x.amount});
+ 
+ const byCat={};tx.filter(x=>x.type==="out").forEach(x=>byCat[x.cat]=(byCat[x.cat]||0)+x.amount);
+ const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,6), max=cats[0]?.[1]||1;
+ $("bars").innerHTML=cats.map(([c,v])=>`<div class="barrow"><div class="barlabel"><span>${esc(c)}</span><b>${money(v)}</b></div><div class="bar"><i style="width:${Math.max(4,v/max*100)}%"></i></div></div>`).join("")||'<div class="empty">Pas encore de dépenses.</div>';
+ const cur=tx.filter(x=>x.date.slice(0,7)===new Date().toISOString().slice(0,7)),ci=cur.filter(x=>x.type==="in").reduce((s,x)=>s+x.amount,0),co=cur.filter(x=>x.type==="out").reduce((s,x)=>s+x.amount,0);
+ $("dashText").innerHTML=`<b>Ce mois-ci</b><br>Recettes : ${money(ci)}<br>Dépenses : ${money(co)}<br>Résultat : <b>${money(ci-co)}</b>`;
+ $("summary").innerHTML=Object.entries(months).sort().reverse().slice(0,12).map(([m,v])=>`${m} — recettes <b>${money(v.i)}</b> · dépenses <b>${money(v.o)}</b> · solde <b>${money(v.i-v.o)}</b>`).join("<br>")||"Ajoute des opérations pour voir le résumé.";
+}
+function updatePlan(){
+ $("currentPlan").textContent=plan==="free"?"Version gratuite":plan==="plus"?"Registre CH Plus":"Registre CH Pro";
+ document.querySelectorAll("[data-plan]").forEach(b=>b.textContent=b.dataset.plan===plan?"Actuel":`Tester ${b.dataset.plan==="plus"?"Plus":"Pro"}`);
+ $("planMsg").textContent=plan==="free"?"Mode test : fonctionnalités gratuites actives.":plan==="plus"?"Mode test Plus : justificatifs photo et dashboard avancé activés.":"Mode test Pro : toutes les fonctions prévues sont simulées. Aucun paiement réel.";
+}
+document.addEventListener("click",e=>{
+ const p=e.target.dataset.plan;if(p){plan=p;localStorage.setItem("registre_ch_plan",plan);updatePlan();render()}
+});
+$("profession").addEventListener("change",()=>{
+  localStorage.setItem(PROFILE_KEY,$("profession").value);
+  CATS=PROFILES[$("profession").value].cats;
+  refreshCategories(); render();
+});
+$("quickcats").addEventListener("click",e=>{
+  if(e.target.dataset.cat){$("category").value=e.target.dataset.cat;window.scrollTo({top:$("form").getBoundingClientRect().top+scrollY-90,behavior:"smooth"});}
+});
+$("form").addEventListener("submit",async e=>{
+ e.preventDefault();let a=Number($("amount").value);if(!(a>0))return;
+ let receipt=null, f=$("receipt").files[0];
+ if(f && plan==="free"){alert("Les justificatifs photo sont disponibles dans l'offre Plus.");return}
+ if(f){receipt=await new Promise(resolve=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(f)})}
+ tx.push({id:Date.now(),date:new Date().toISOString().slice(0,10),type:$("type").value,desc:$("desc").value.trim(),amount:a,cat:$("category").value,receipt});
+ save();e.target.reset();render()
+});
+document.addEventListener("click",e=>{let id=e.target.dataset.del;if(id){tx=tx.filter(x=>String(x.id)!==id);save();render()}});
+["search","month","filterCat"].forEach(id=>$(id).addEventListener("input",render));
+$("exportJson").onclick=()=>download("registre-ch-sauvegarde.json",JSON.stringify({version:1,exportedAt:new Date().toISOString(),transactions:tx},null,2),"application/json");
+$("exportCsv").onclick=()=>{let s="Date;Type;Description;Catégorie;Montant CHF\n"+tx.map(x=>`${x.date};${x.type==="in"?"Recette":"Dépense"};"${x.desc.replaceAll('"','""')}";"${x.cat}";${x.amount.toFixed(2)}`).join("\n");download("registre-ch.csv","\ufeff"+s,"text/csv;charset=utf-8")};
+function download(name,data,type){let b=new Blob([data],{type}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+$("importBtn").onclick=()=>$("file").click();
+$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let o=JSON.parse(r.result);tx=Array.isArray(o)?o:o.transactions;save();render();alert("Sauvegarde importée.")}catch{alert("Fichier invalide.")}};r.readAsText(f)};
+$("reset").onclick=()=>{if(confirm("Supprimer toutes les opérations de cet appareil ?")){tx=[];save();render()}};
+setup();load();updatePlan();render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>
